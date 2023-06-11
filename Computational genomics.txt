@@ -1,0 +1,701 @@
+#################################### Question 1 #########################################
+
+#setting the seed
+set.seed(0)
+
+#Cheking the working directory 
+getwd()
+
+#Importing and reading the clinical data and setting the unique IDs of the organs (SMPLID) as the row names of the resulting data frame 
+clinical_data = read.delim(file='clinical-data.tsv',sep='\t',header=TRUE,row.names=1)
+
+## Creating a separate vector for each of clinical our variables 
+Sex <- clinical_data$SEX
+Age <- clinical_data$AGE
+Height <- clinical_data$HGHT
+Weight <- clinical_data$WGHT
+BMI <- clinical_data$BMI
+Cohort <- clinical_data$COHORT
+IschemicTime <- clinical_data$TRISCHD
+Hardyscale <- clinical_data$DTHHRDY
+
+## Checking if there are any missing values (NA) in our vectors. Returns FALSE if there are no missing values, otherwise TRUE
+
+any(is.na(Cohort))
+any(is.na(Age))
+any(is.na(BMI))
+any(is.na(Height))
+any(is.na(Weight))
+any(is.na(IschemicTime))
+any(is.na(Sex))
+any(is.na(Hardyscale))
+
+################### 1.1 Assesing the normality of our data variables:
+
+## First using visulas 
+# Box-plot
+boxplot(clinical_data$AGE)
+boxplot(clinical_data$BMI)
+boxplot(clinical_data$HGHT)
+boxplot(clinical_data$TRISCHD)
+boxplot(clinical_data$SEX)
+boxplot(clinical_data$WGHT)
+
+
+#Mean and Median histograms: 
+# histogram of the Age, with mean and median lines 
+hist(Age)
+abline(v = mean(Age), col = "green", lwd = 4)         # Add line for mean
+text(x = mean(Age) * 1.7,                   # Add text for mean
+     y = mean(Age) * 1.7,
+     paste("Mean =", mean(Age)),
+     col = "green",
+     cex = 2)
+abline(v=median(Age),col="red",lwd = 3)  # Add line for the median
+text(x = median(Age) * 1.7,                 # Add text for median
+     y = median(Age) * 1.7,
+     paste("Median =", median(Age)),
+     col = "red",
+     cex = 2)
+print(median(Age))
+
+
+# histogram of the Age, with mean and median lines usinf ggplot2
+library(ggplot2)                        # Load ggplot2 package
+
+ggp <- ggplot(data = data.frame(Age), aes(x = Age)) +    # Draw histogram
+  geom_histogram(bins = 10)
+ggp
+
+ggp +                                     # Add line for mean and its annotation
+  geom_vline(xintercept = mean(Age), col = "red", lwd = 3) +
+  annotate("text", x = mean(Age) * 2, y = 30, label = paste("Mean =", round(mean(Age), 2)),
+           col = "red", size = 4) +
+  
+  # Add line for median and its annotation
+  geom_vline(xintercept = median(Age), col = "green", lwd = 3) +
+  annotate("text", x = median(Age) * 1.5, y = 30, label = paste("Median =", median(Age)),
+           col = "green", size = 4)
+
+
+# histogram of the BMI, with mean and median lines usinf ggplot2
+
+ggp <- ggplot(data = data.frame(BMI), aes(x = BMI)) +    # Draw histogram
+  geom_histogram(bins = 10)
+ggp
+
+ggp +                                     # Add line for mean and its annotation
+  geom_vline(xintercept = mean(BMI), col = "red", lwd = 3) +
+  annotate("text", x = mean(BMI) * 2, y = 30, label = paste("Mean =", round(mean(BMI), 2)),
+           col = "red", size = 4)
+
+
+# histogram of the Height , with mean and median lines usinf ggplot2
+
+ggp <- ggplot(data = data.frame(Height), aes(x = Height)) +    # Draw histogram
+  geom_histogram(bins = 10)
+ggp
+
+ggp +                                     # Add line for mean and its annotation
+  geom_vline(xintercept = mean(Height), col = "red", lwd = 3) +
+  annotate("text", x = mean(Height) * 2, y = 30, label = paste("Mean =", round(mean(Height), 4)),
+           col = "red", size = 4)
+
+# histogram of the IschemicTime, with mean and median lines usinf ggplot2
+
+ggp <- ggplot(data = data.frame(IschemicTime), aes(x = IschemicTime)) +    # Draw histogram
+  geom_histogram(bins = 10)
+ggp
+
+ggp +                                     # Add line for mean and its annotation
+  geom_vline(xintercept = mean(IschemicTime), col = "red", lwd = 3) +
+  annotate("text", x = mean(IschemicTime) * 2, y = 30, label = paste("Mean =", round(mean(IschemicTime), 2)),
+           col = "red", size = 4)
+
+
+
+# Distribution of data according to the Sex 
+library(ggplot2)
+Sex_factor <- as.factor(Sex)    # Convert the vector to a factor
+ggplot(data = data.frame(Sex_factor), aes(x = Sex_factor)) +
+  geom_histogram(stat = "count")                    # Plot a histogram of the non-numeric data
+
+
+
+# histogram of the Weight, with mean and median lines usinf ggplot2
+
+ggp <- ggplot(data = data.frame(Weight), aes(x = Weight)) +    # Draw histogram
+  geom_histogram(bins = 10)
+ggp
+
+ggp +                                     # Add line for mean and its annotation
+  geom_vline(xintercept = mean(Weight), col = "red", lwd = 3) +
+  annotate("text", x = mean(Weight) * 2, y = 30, label = paste("Mean =", round(mean(Weight), 2)),
+           col = "red", size = 4)
+
+
+#Distribution of data according to the HardyScale
+hist(Hardyscale)
+abline(v=mean(Hardyscale),col="red",lwd=4)
+
+
+# Distribution of data according to the type of donors 
+library(ggplot2)
+Cohort_factor <- as.factor(Cohort)    # Convert the vector to a factor
+ggplot(data = data.frame(Cohort_factor), aes(x = Cohort_factor)) +
+  geom_histogram(stat = "count")                    # Plot a histogram of the non-numeric data
+
+
+
+## Second using stat tests :
+# Formal Normality test for better accuracy: Shapiro test
+
+# Shapiro test for Age
+shapiro.test(Age)
+# Shapiro test for BMI
+shapiro.test(BMI)
+# Shapiro test for Height
+shapiro.test(Height)
+# Shapiro test for IschemicTime
+shapiro.test(IschemicTime)
+#shapiro.test(Sex) 
+shapiro.test(Sex)
+# Shapiro test for Weight
+shapiro.test(Weight)
+# Shapiro test for HardyScale
+shapiro.test(Hardyscale)
+
+
+
+## Remarque : ABOUT THE DATA NORMALIZATION
+#Since the formula for calculating the correlation coefficient standardizes the variables, changes in scale or units of measurement will not affect its value. For this reason, normalizing will NOT affect the correlation.
+
+#################### 1.2 Correlation tests within our variables 
+
+# Create a data frame from the numerical variables
+df.num <- data.frame(Age, Height, Weight, BMI, IschemicTime)
+
+#  nt Create Regression line of pairs scatter plot matrix using ggplot2
+#regresion
+library(ggplot2)
+ggplot(df.num, aes(x = Age, y = Height)) + # create a scatter plot of AGE vs. HGHT
+  geom_point() + # add data points to the plot
+  labs(x = "Age", y = "Height") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() # set the plot theme to a black-and-white color scheme
+
+ggplot(df.num, aes(x = Age, y = Weight)) + # create a scatter plot of AGE vs. WGHT
+  geom_point() + # add data points to the plot
+  labs(x = "Age", y = "Weight") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() # set the plot theme to a black-and-white color scheme
+
+ggplot(df.num, aes(x = Age, y = BMI)) + # create a scatter plot of AGE vs. BMI
+  geom_point() + # add data points to the plot
+  labs(x = "Age", y = "BMI") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() # set the plot theme to a black-and-white color scheme
+
+### age Isch
+ggplot(df.num, aes(x = IschemicTime, y = Age)) + # create a scatter plot of AGE vs. TRISCHD
+  geom_point() + # add data points to the plot
+  labs(x = "IschemicTime", y = "Age") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() # set the plot theme to a black-and-white color scheme
+
+#using ggplot
+## Scatter plot
+library(GGally)
+library(ggplot2)
+
+Sc_df <- data.frame(Sex, Age, Height, Weight, BMI, IschemicTime)
+
+# Create a scatter plot matrix using GGally
+ggpairs(data = Sc_df, 
+        upper = list(continuous = "cor"),
+        lower = list(combo = "facethist", bins = 30),
+        diag = list(continuous = "densityDiag", alpha = 0.5))
+
+#using ggplot
+## Scatter plot
+library(GGally)
+library(ggplot2)
+
+Sc_df <- data.frame(Sex, Age, Height, Weight, BMI, IschemicTime)
+
+# Create a scatter plot matrix using GGally
+ggpairs(data = Sc_df, 
+        upper = list(continuous = "cor"),
+        lower = list(combo = "facethist", bins = 30),
+        diag = list(continuous = "densityDiag", alpha = 0.5))
+
+##Correlation plots 
+# Load the required packages
+
+library(corrplot)
+
+# Calculate the Spearman correlation matrix
+corr_matrix <- cor(Sc_df, method = "spearman")
+
+# Print the correlation matrix
+print(corr_matrix)
+
+# Create the correlogram
+require(corrplot)
+corrplot(corr_matrix)
+corrplot(corr_matrix, method = "number")
+
+
+# Plot an annotated correlation triangle
+corrplot(corr_matrix, method = "color", type = "upper", order = "hclust", addCoef.col = "black", tl.col = "black", tl.srt = 45, diag = FALSE)
+
+## Scatter plot btw Weight and BMI and linear regression line.
+library(ggplot2)
+ggplot(df.num, aes(x = BMI, y = Weight)) + # create a scatter plot of AGE vs. TRISCHD
+  geom_point() + # add data points to the plot
+  labs(x = "BMI", y = "Weight") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() +# set the plot theme to a black-and-white color scheme
+  ggtitle("Scatter Plot: BMI by Weight")
+## Plus: Scatter plot btw Weight and Height and linear regression line.
+library(ggplot2)
+ggplot(df.num, aes(x = Height, y = Weight)) + # create a scatter plot of AGE vs. TRISCHD
+  geom_point() + # add data points to the plot
+  labs(x = "Height", y = "Weight") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() + # set the plot theme to a black-and-white color scheme
+  ggtitle("Scatter Plot: Height by Weight")
+  
+
+## plot Sex vs IschemicTime
+splot_SIch <- data.frame(Sex, IschemicTime)
+# Convert 'sex' variable to factor
+Sex_factor <- as.factor(Sex)
+# Create the scatter plot
+ggplot(splot_SIch, aes(x = Sex_factor, y = IschemicTime)) +
+  geom_point() +
+  labs(x = "Sex", y = "IschemicTime") +
+  ggtitle("Scatter Plot: Ischemic Time by Sex")
+
+### Plus: Scatter plot btw IschemicTime and Height linear regression line.
+library(ggplot2)
+ggplot(df.num, aes(x = IschemicTime, y = Height)) + # create a scatter plot of AGE vs. TRISCHD
+  geom_point() + # add data points to the plot
+  labs(x = "IschemicTime", y = "Height") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() + # set the plot theme to a black-and-white color scheme
+  ggtitle("Scatter Plot: IschemicTime by Height")
+## Plus: Scatter plot btw Weight and IschemicTime and linear regression line.
+library(ggplot2)
+ggplot(df.num, aes(x = IschemicTime, y = Weight)) + # create a scatter plot of AGE vs. TRISCHD
+  geom_point() + # add data points to the plot
+  labs(x = "IschemicTime", y = "Weight") + # add axis labels
+  geom_smooth(method = "lm", se = FALSE) + # add a linear regression line to the plot
+  theme_bw() + # set the plot theme to a black-and-white color scheme
+  ggtitle("Scatter Plot: IschemicTime by Weight")
+
+
+#correlation alone does not establish causation, and it is important to carefully analyze the context and potential confounding factors when interpreting the relationship between variables.
+################################## 1.3 Confounding clinical variables
+
+##########Scatter plot of ischemic time vs Height depending on the cohort
+plot(IschemicTime, Height, pch = 15, col=factor(Cohort))
+# Legend
+legend("bottomright",
+       legend = levels(factor(Cohort)),
+       pch = 19,
+       col = factor(levels(factor(Cohort))))
+
+
+##########Scatter plot of ischemic time vs Height depending on the HardyScale
+plot(IschemicTime, Height, pch = 15, col=factor(Hardyscale))
+# Legend
+legend("bottomright",
+       legend = levels(factor(Hardyscale)),
+       pch = 19,
+       col = factor(levels(factor(Hardyscale))))
+
+
+##########Scatter plot of ischemic time vs Age depending on the HardyScale
+plot(IschemicTime, Age, pch = 15, col=factor(Hardyscale))
+# Legend
+legend("bottomright",
+       legend = levels(factor(Hardyscale)),
+       pch = 19,
+       col = factor(levels(factor(Hardyscale))))
+
+##########Scatter plot of ischemic time vs Age depending on the Type Of Donors
+plot(IschemicTime, Age, pch = 15, col=factor(Cohort))
+# Legend
+legend("bottomright",
+       legend = levels(factor(Cohort)),
+       pch = 19,
+       col = factor(levels(factor(Cohort))))
+
+###Grouped barplot for COHORT and DTHHRDY
+
+clinical_data$DTHHRDY <- as.factor(clinical_data$DTHHRDY)
+clinical_data$COHORT <- as.factor(clinical_data$COHORT)
+compare <- table(clinical_data$COHORT,clinical_data$DTHHRDY)
+# Shows the proportion of type of donors characterized by a given Hardy scale. 
+print(compare)
+
+barplot(compare,main="Hardy scale",
+        col=c("black","red"),beside=TRUE)
+legend("topright", legend=c("Organ Donor (OPO)", "Postmortem"),
+       col=c("black", "red"), pch=19, cex=0.6)
+
+
+#########"PCA 
+
+#instal packages pour analyse PCA :
+library(factoextra)
+library(FactoMineR)
+library(psych)
+
+# Create data frame for the correlation matrix , we excluse the Sex variable since it's not related to none of our variables (see scattlet plots matrix)
+pca_num <- data.frame(Age, Height, Weight, BMI, IschemicTime)
+# Data frame's infos
+str(pca_num) 
+dim(pca_num)
+
+#construire la matrice de correlation voir si suffisant pour APC:
+pairs(pca_num[,1:5])
+matrice.corr <- cor(pca_num[,1:5])
+# "BARTLLET TEST" Voir si notre matrice n'est pas identitaire donc il y'a une correlation suffisante
+det(matrice.corr) # siH0: det(pca_num)=1   H1:det< ou > 1 
+cortest.bartlett(matrice.corr, n=5) #p value=0.69 donc on rejette H0 donc notre indep
+
+#KMO
+KMO(matrice.corr)  # MSA faible mais cela implique pas l'impossibilité  d'utilisation de la PCA , 
+#MSA IschemicTime Trés bonne solution factoriel  a une structure de corrélation suffisamment forte avec les autres variables de votre
+#ensemble de données, ce qui la rend appropriée pour être incluse dans une EFA.
+
+
+#matrice de correlation n'est pas identitaire 
+###normalize the dara
+normalized_data <- scale(pca_num)
+print(normalized_data)
+# Pca test:
+Res.pca <- PCA(normalized_data, graph=TRUE)
+#print the pca
+plot(Res.pca$ind$coord)
+#print eigenvalues
+print(Res.pca$eig)
+#correlation of each variable with each axe of the PCA cercle( bien projecté et bien corélées avec chaque axe)
+res.desc <- dimdesc(Res.pca, axes = c(1,2), proba = 0.05)
+# Contribution of variables
+fviz_eig(Res.pca, addlabels = TRUE, ylim = c(0, 45))
+
+############################################################ Question 2################################################################
+
+cat("\014") #delete command history
+rm(list=ls())#delete environment variable (workspace)
+dev.off() #delete current plots
+setwd("C:/Users/Martain/Documents/Etudes/MA2 IRBI/Functional genomics/Project")
+getwd()
+#install.packages("BiocManager")
+#BiocManager::install("DESeq2")
+#install.packages("ggplot2")
+#install.packages("corrplot")
+library(corrplot)
+library("DESeq2")
+library(ggplot2)
+morph_counts=t(read.delim("morphological-counts.tsv",h=T,row.names="SMPLID"))#row=donor id;column=morphological cluster
+clinical_data=read.delim("clinical-data.tsv",h=T,row.names="SMPLID")
+#### Q3 ####
+#morph_counts=(read.delim("morphological-counts.tsv",h=T,row.names="SMPLID"))
+#rna_counts=(read.delim("RNA-read-counts.tsv",h=T,row.names="Name"))
+#rna_counts=rna_counts[,-1]
+#colnames(rna_counts)=rownames(morph_counts)
+
+clinical_data$SEX=as.factor(clinical_data$SEX)
+clinical_data$DTHHRDY=as.factor(clinical_data$DTHHRDY)
+############### Q2.1 ####################################
+#factor demographic variable SEX
+dds = DESeqDataSetFromMatrix(countData=morph_counts, 
+                              colData=clinical_data, 
+                              design=~SEX)
+dds=DESeq(dds)
+res=results(dds,alpha=0.05)
+res = res[order(res$padj),]
+summary(res)
+res_ok=res
+res_ok[is.na(res_ok$padj),6]=rep(1,sum(is.na(res_ok$padj)))
+res_ok=res_ok[res_ok$padj<0.05,c(2,6)] #for 2 levels factor variable, LFC give the log(2) change of expression between the 2 levels (one being ctrl, here F)
+print(res_ok) #selection of significant clusters
+upreg=print(row.names(res_ok[res_ok$log2FoldChange>0,]))
+downreg=print(row.names(res_ok[res_ok$log2FoldChange<0,]))
+plotMA(res,alpha=0.05, main="SEX")
+corrplot(cor(t(morph_counts[row.names(res_ok),]),method="spearman"),order="AOE",addCoef.col = 'green')
+
+#abline(h=c(-1,1), col="dodgerblue", lwd=2)
+
+#continuous demographic/health variables
+k=2 #from 2 to 5
+  dds = DESeqDataSetFromMatrix(countData=morph_counts,colData=clinical_data,
+                               design=as.formula(paste("~",colnames(clinical_data)[k])))
+  dds=DESeq(dds)
+  res=results(dds,alpha=0.05)
+  res = res[order(res$padj),]
+  summary(res)
+  res_ok=res
+  res_ok[is.na(res_ok$padj),6]=rep(1,sum(is.na(res_ok$padj)))
+  res_ok=res_ok[res_ok$padj<0.05,c(2,6)]
+  print(res_ok)
+  upreg=print(row.names(res_ok[res_ok$log2FoldChange>0,]))
+  downreg=print(row.names(res_ok[res_ok$log2FoldChange<0,]))
+  plotMA(res,alpha=0.05, main=colnames(clinical_data)[k]) #for continuous variables, LFC give the change of LFC per unit of change of the variable (slope)
+  corrplot(cor(t(morph_counts[row.names(res_ok),]),method="spearman"),order="AOE",addCoef.col = 'green')
+  #for (j in 1:nrow(res_ok)){
+  # plotCounts(dds, gene=rownames(res_ok)[j], intgroup=colnames(clinical_data)[k])
+  # }
+
+
+################ Q2.2 #########################
+#continuous technical variable TRISCHD
+dds = DESeqDataSetFromMatrix(countData=morph_counts,
+                                colData=clinical_data, design=~TRISCHD)
+dds=DESeq(dds)
+res=results(dds,alpha=0.05)
+res = res[order(res$padj),]
+summary(res)
+res_ok=res
+res_ok[is.na(res_ok$padj),6]=rep(1,sum(is.na(res_ok$padj)))
+res_ok=res_ok[res_ok$padj<0.05,c(2,6)]
+print(res_ok)
+plotMA(res,alpha=0.05, main="TRISCHD")
+
+D############## correlation between clusters #################
+corrplot(cor(t(morph_counts)), method = "circle",tl.pos='n')
+
+
+
+
+
+############################################################ Question 3 #####################################################################################
+
+
+library(DESeq2)
+library(ggplot2)
+library(fgsea)
+pathways <- gmtPathways("c2.cp.reactome.v7.5.1.symbols.gmt")
+
+
+#Q1
+
+#to put in form of frequencies
+N <- nrow(morphological.counts)
+M <- ncol(morphological.counts)
+o = 0
+morphological.frequencies <- data.frame(rep(list(rep(NA,N)),M))
+names(morphological.frequencies) <- names(morphological.counts)
+rownames(morphological.frequencies) <- rownames(morphological.counts)
+for (i in 1:N){
+  for (j in 1:M){o = o + as.numeric(morphological.counts[i,j])}
+  for (t in 1:M){morphological.frequencies[i,t] <- as.numeric(morphological.counts[i,t])/o}
+  o = 0
+}
+
+#remove first column of descriptions
+
+RNA.reads <- RNA.read.counts[,-1]
+#compute the median average deviation of each transcript
+transcript <- c()
+for (i in 1:nrow(RNA.reads)){
+  transcript <- c(transcript,mad(as.numeric(RNA.reads[i,1:ncol(RNA.reads)])))
+}
+summary(transcript)
+
+#keep only transcripts with a mad > than the median
+
+RNA.reads <- RNA.reads[transcript > 1.5,]
+
+
+colnames(RNA.reads)=rownames(morphological.frequencies)
+
+#create empty matrix for stocking our Deseq2 results
+padjRNA <- data.frame(matrix(
+  NA, nrow = nrow(RNA.reads),
+  ncol = ncol(morphological.frequencies)
+))
+log2RNA <- data.frame(matrix(
+  NA, nrow = nrow(RNA.reads),
+  ncol = ncol(morphological.frequencies)
+))
+waldRNA <- data.frame(matrix(
+  NA, nrow = nrow(RNA.reads),
+  ncol = ncol(morphological.frequencies)
+))
+pRNA <- data.frame(matrix(
+  NA, nrow = nrow(RNA.reads),
+  ncol = ncol(morphological.frequencies)
+))
+rownames(padjRNA) <- rownames(RNA.reads)
+names(padjRNA) <- colnames(morphological.frequencies)
+rownames(log2RNA) <- rownames(RNA.reads)
+names(log2RNA) <- colnames(morphological.frequencies)
+rownames(waldRNA) <- rownames(RNA.reads)
+names(waldRNA) <- colnames(morphological.frequencies)
+rownames(pRNA) <- rownames(RNA.reads)
+names(pRNA) <- colnames(morphological.frequencies)
+
+
+#Deseq2 (without the 2 confounders (cluster 14 and 58))
+
+for (k in 1:64){
+  if(k == 15 | k == 59) {
+    next}
+  print(colnames(morphological.frequencies)[k])                           
+  dds <- DESeqDataSetFromMatrix(countData = RNA.reads,
+                              colData = morphological.frequencies, 
+                              design=as.formula(paste("~",colnames(morphological.frequencies)[k],"+",
+                                                names(morphological.frequencies)[15]
+                                                ,"+",names(morphological.frequencies)[59])))
+  dds <- DESeq(dds)
+  res <- results(dds)
+  padjRNA[,k] <- res$padj
+  log2RNA[,k] <- res$log2FoldChange
+  waldRNA[,k] <- res$stat
+  pRNA[,k] <- res$pvalue
+  padjMorph <- res$padj
+  names(padjMorph) <- rownames(padjRNA)
+    }
+
+#to keep only transcript with a adjusted p value less than 0.1
+filter_func <- function(col) {
+  filtered_col <- col
+  filtered_col[col >= 0.1] <- NA
+  filtered_col
+}
+filt_padj <- as.data.frame(lapply(padjRNA, filter_func))
+rownames(filt_padj)=rownames(padjRNA)
+
+#To remove the NA and obtain the number of transcript in each cluster
+sorted_padj <- lapply(filt_padj, function(col) sort(na.omit(col)))
+Nbr_regulated <- sapply(sorted_padj, length)
+Nbr_regulated
+
+# To get the names of the genes ordered by high to low significant
+gene_list <- list()
+for (i in 1:ncol(filt_padj)) {
+  gene_row <- rownames(filt_padj[!is.na(filt_padj[, i]), , drop = FALSE])
+  gene_values <- filt_padj[!is.na(filt_padj[, i]), i]
+  sorted_indices <- order(gene_values)
+  gene_row <- gene_row[sorted_indices]
+  gene_list[[i]] <- gene_row
+}
+
+names(gene_list) <- colnames(morphological.frequencies)
+
+#To remove the gene if the log2 value is negative
+for (i in 1:length(gene_list)) {
+  if (length(gene_list[[i]]) != 0){
+  for (k in 1:length(gene_list[[i]])){
+  cluster <- names(gene_list)[i]
+  genes_cluster <- gene_list[[i]][k]
+  values_log2 <- log2RNA[genes_cluster, cluster]
+    if (!is.na(values_log2) && values_log2 < 0) {
+  gene_list[[i]] <- gene_list[[i]][-k]
+    }
+  }
+}
+}
+
+#To count how many times each transcript is significant in all the clusters
+gene_names <- rownames(RNA.reads)
+top_genes <- data.frame(Gene = character(), Count = numeric(), Cluster = character(), stringsAsFactors = FALSE)
+for (gene_name in gene_names) {
+  count <- 0
+  clusters <- character()
+  for (i in 1:length(gene_list)) {
+    if (gene_name %in% gene_list[[i]]) {
+      count <- count + 1
+      clusters <- c(clusters, names(gene_list)[i])
+    }
+  }
+  top_genes <- rbind(top_genes, data.frame(Gene = gene_name, Count = count, Cluster = paste(clusters, collapse = ", "), stringsAsFactors = FALSE))
+}
+top_genes <- top_genes[order(-top_genes$Count), ]
+top_12_genes <- head(top_genes, 12)
+print(top_12_genes)
+
+
+#Q2
+
+
+#Deseq2 for the cluster control 58
+
+dds <- DESeqDataSetFromMatrix(countData = RNA.reads,
+                              colData = morphological.frequencies, 
+                              design=~Mophological.cluster.58 + 
+                                Mophological.cluster.14)
+dds <- DESeq(dds)
+res <- results(dds)
+padjRNA$Mophological.cluster.58 <- res$padj
+pRNA$Mophological.cluster.58 <- res$pvalue
+waldRNA$Mophological.cluster.58 <- res$stat
+log2RNA$Mophological.cluster.58 <- res$log2FoldChange
+
+
+#To create a matrix to rank the genes by significant for the fgsea use
+rankGene <- data.frame(matrix(
+  NA, nrow = nrow(RNA.reads),
+  ncol = ncol(morphological.frequencies)
+))
+rownames(rankGene) <- rownames(RNA.reads)
+names(rankGene) <- names(morphological.frequencies)
+geneNames <- RNA.read.counts[,1][transcript>= 1.5]
+for (i in 1:ncol(rankGene)){
+  rankGene[,i] <- -sign(log2RNA[,i])*log10(padjRNA[,i])
+}
+
+#The fgsea analysis
+
+genesets <- c()
+NES+ <- c()
+NES- <- c()
+for (morph in names(rankGene)){
+  if(morph == "Mophological.cluster.14"){
+    next}
+  print(morph)
+  rank <- rankGene[,morph]
+  names(rank) <- geneNames
+  rank <- na.omit(rank)
+  sortedrank <- sort(rank,decreasing = TRUE)
+  fgseaRes <- fgsea(pathways,sortedrank)
+  collapsedPathways <- collapsePathways(fgseaRes[order(pval)][padj < 0.05],
+                                        pathways, sortedrank)
+  mainPathways <- fgseaRes[pathway %in% collapsedPathways$mainPathways][
+    order(-NES), pathway]
+  NES+ <- c(NES+,list(fgseaRes[pathway %in% collapsedPathways$mainPathways][
+    NES > 0 & padj < 0.05, pathway]))
+  NES- <- c(NES-,list(fgseaRes[pathway %in% collapsedPathways$mainPathways][
+    NES < 0 & padj < 0.05, pathway]))
+  genesets <- c(genesets,list(mainPathways))
+  if (morph == "Mophological.cluster.45" | morph == "Mophological.cluster.58"){
+    plot.new()
+    plotGseaTable(pathways[mainPathways][1:10], sortedrank, fgseaRes, 
+                  gseaParam=0.5)
+  }
+  print("Done")
+    
+}
+
+#The number of genes set in each cluster
+for (i in 1:length(genesets)){
+  print(names(rankGene)[i])
+  print(length(genesets[[i]]))
+}
+
+#To obtain the 10 most genes sets represented
+gene_scores <- table(unlist(NES+))
+top_genesset <- names(head(sort(gene_scores, decreasing = TRUE), 10))
+
+# To obtain the number of clusters in which each genes set is represented
+gene_cluster_counts <- sapply(top_genesset, function(gene) sum(sapply(NES+, function(NES+) gene %in% NES+)))
+
+cat("The ten most represented gene sets are :\n")
+for (i in 1:length(top_genesset)) {
+  cat(top_genesset[i], "-", gene_cluster_counts[i], "clusters\n")
+}
